@@ -1,8 +1,11 @@
 
 
-<h1 align="center">Hi, I'm <a style="color: #1b6cd9" id="zalupa">Boris</a> 
+<h1 align="center">
+    Hi, I'm 
+    <a style="color: #1b6cd9"">Boris</a> 
     <img src="https://github.com/blackcater/blackcater/raw/main/images/Hi.gif" height="32"/>
 </h1>
+<hr>
 <p align="center" onclick="click()">in this game you should find the longest way in labyrinth</p>
 <div style="display: flex; flex-direction: column; justify-content: center; align-content: center; width: 100%; align-items: center;">
     <p>Instruction</p>
@@ -23,11 +26,6 @@
         </td>
     </table>
 </div>
-
-<!---Для подробной версии-->
-[![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=anuraghazra)](https://github.com/anuraghazra/github-readme-stats)
-
-
 
 <div align="right">
     <p style="margin-bottom: -6px;">Realized by Boris Kiva</p>
