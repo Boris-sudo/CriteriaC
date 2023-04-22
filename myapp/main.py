@@ -2,6 +2,9 @@
 import math
 import pygame
 import time
+import cv2
+import numpy
+import struct
 """Параметры"""
 from lib.parameters import *
 from lib.labirint_generator import generate_labyrinth
@@ -31,14 +34,6 @@ def draw_labyrinth(matrix, start, finish):
                     pygame.draw.line(window, COLOR_WAY, [i, j], [i, j], 1)
                 else:
                     pygame.draw.line(window, COLOR_WALL, [i, j], [i, j], 1)
-    # pygame.draw.rect(window, COLOR_START, (
-    #     WIDTH_BORDER + start[0] * (WIDTH_LINE + WIDTH_WALL), WIDTH_BORDER + start[1] * (WIDTH_LINE + WIDTH_WALL),
-    #     WIDTH_LINE,
-    #     WIDTH_LINE))
-    # pygame.draw.rect(window, COLOR_FINISH, (
-    #     WIDTH_BORDER + finish[0] * (WIDTH_LINE + WIDTH_WALL), WIDTH_BORDER + finish[1] * (WIDTH_LINE + WIDTH_WALL),
-    #     WIDTH_LINE,
-    #     WIDTH_LINE))
 
 
 def new_game():
@@ -156,6 +151,19 @@ def is_valid(x, y, matrix):
     return 0 <= 2 * x <= n and 0 <= 2 * y <= m
 
 
+def to_16(s):
+    if type(s) == str:
+        s = int(s, 2)
+    s16 = hex(s)[2:]
+    if len(s16) % 2 == 1:
+        s16 = '0' + s16
+    res = ""
+    for i in range(len(s16)):
+        if i != 0 and i % 2 == 0:
+            res += ' '
+        res += s16[i]
+    return res
+
 """Переменные"""
 info = True
 t = 0
@@ -185,8 +193,8 @@ InputHeight = Input(100, 600, ["Высота: ", "Height: "])
 StartButton = StartButton(1000, 300, window)
 SettingsButton = ImageButton(WIDTH_WINDOW, HEIGHT_WINDOW, window, settingsIcon)
 OutButton = ImageButton(WIDTH_WINDOW, HEIGHT_WINDOW, window, crossIcon)
-ChangeLanguage = ImageButton(300, 300, window, changeLanguageIcon)
-Safe = ImageButton(600, 300, window, changeLanguageIcon)
+ChangeLanguageButton = ImageButton(300, 300, window, changeLanguageIcon)
+SafeButton = ImageButton(60, 790, window, safeIcon)
 """Динамичные переменные"""
 matrix = []
 flag_game = True  # основной цикл игры
@@ -203,6 +211,7 @@ position_finish = DEFAULT_CORDS
 start_time = time.time()
 max_length = 0
 length = -1
+image_count=0
 """Основной цикл игры"""
 while flag_game:
     window.fill(BLACK)
@@ -266,7 +275,10 @@ while flag_game:
                     elif status_input == "height":
                         InputHeight.add("0")
                 if event.key == pygame.K_BACKSPACE:
-                    InputWidth.delete()
+                    if status_input == "width":
+                        InputWidth.delete()
+                    elif status_input == "height":
+                        InputHeight.delete()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if StartButton.on_click(pos):
                     if InputWidth.is_void() or InputHeight.is_void():
@@ -312,6 +324,28 @@ while flag_game:
                     break
             max_length = max_way_in_labyrinth(matrix)
             matrix_base.append(matrix)
+        """Отрисовка"""
+        # Лабиринт
+        draw_labyrinth(matrix, start, finish)
+        # Кнопки
+        SafeButton.draw(window)
+        # Круги на старте и финише
+        pygame.draw.circle(window, PURPLE, radius=10,
+                           center=[(WIDTH_BORDER + position_start[0] * (WIDTH_LINE + WIDTH_WALL)) + 20,
+                                   (WIDTH_BORDER + position_start[1] * (WIDTH_LINE + WIDTH_WALL)) + 20])
+        pygame.draw.circle(window, PURPLE, radius=10,
+                           center=[(WIDTH_BORDER + position_finish[0] * (WIDTH_LINE + WIDTH_WALL)) + 20,
+                                   (WIDTH_BORDER + position_finish[1] * (WIDTH_LINE + WIDTH_WALL)) + 20])
+        if position_finish != DEFAULT_CORDS:
+            pos_s = (position_start[0] * 2, position_start[1] * 2)
+            pos_f = (position_finish[0] * 2, position_finish[1] * 2)
+            length = draw_path(window, matrix, pos_s, pos_f)
+            length_text = get_text(length)
+            lengthText = font.render("{} {}, хотя самый длинный {}".format(length, length_text, max_length), True,
+                                     WHITE)
+            lengthTextRect = lengthText.get_rect()
+            lengthTextRect.center = [WIDTH_WINDOW / 2 - 50, 750]
+            window.blit(lengthText, lengthTextRect)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 flag_game = False
@@ -333,26 +367,27 @@ while flag_game:
                     position_start = [pos_x, pos_y]
                 elif position_finish == DEFAULT_CORDS and is_valid(pos_x, pos_y, matrix):
                     position_finish = [pos_x, pos_y]
-        """Отрисовка"""
-        # Лабиринт
-        draw_labyrinth(matrix, start, finish)
-        # Круги на старте и финише
-        pygame.draw.circle(window, PURPLE, radius=10,
-                           center=[(WIDTH_BORDER + position_start[0] * (WIDTH_LINE + WIDTH_WALL)) + 20,
-                                   (WIDTH_BORDER + position_start[1] * (WIDTH_LINE + WIDTH_WALL)) + 20])
-        pygame.draw.circle(window, PURPLE, radius=10,
-                           center=[(WIDTH_BORDER + position_finish[0] * (WIDTH_LINE + WIDTH_WALL)) + 20,
-                                   (WIDTH_BORDER + position_finish[1] * (WIDTH_LINE + WIDTH_WALL)) + 20])
-        if position_finish != DEFAULT_CORDS:
-            pos_s = (position_start[0] * 2, position_start[1] * 2)
-            pos_f = (position_finish[0] * 2, position_finish[1] * 2)
-            length = draw_path(window, matrix, pos_s, pos_f)
-            length_text = get_text(length)
-            lengthText = font.render("{} {}, хотя самый длинный {}".format(length, length_text, max_length), True,
-                                     WHITE)
-            lengthTextRect = lengthText.get_rect()
-            lengthTextRect.center = [WIDTH_WINDOW / 2 - 50, 750]
-            window.blit(lengthText, lengthTextRect)
+                if SafeButton.on_click(pos):
+                    pygame.image.save(window, "myapp\static\screen-images\image{}.png".format(image_count))
+                    view = pygame.surfarray.array3d(window)
+                    view = view.transpose([1, 0, 2])
+                    img_bgr = cv2.cvtColor(view, cv2.COLOR_RGB2BGR)
+                    img_bgr = img_bgr[:-85]
+                    cv2.imshow("image{}".format(image_count), img_bgr)
+                    filename = "myapp\static\mazes\maze{}.kiva".format(image_count)
+                    new_maze = open(filename, "w+")
+                    format_name = 'kiva'
+                    for i in format_name:
+                        new_maze.write(hex(ord(i))[2:] + ' ')
+                    new_maze.write(to_16(WIDTH*2-1) + ' ' + to_16(HEIGHT*2-1))
+                    matrix_string = ""
+                    for i in matrix:
+                        for j in i:
+                            matrix_string = matrix_string + ("0" if j else "1")
+                        new_maze.write(' ' + to_16(matrix_string))
+                        matrix_string = ""
+                    new_maze.write(matrix_string)
+                    image_count += 1
         tick()
         pygame.display.update()
 
@@ -365,7 +400,7 @@ while flag_game:
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if OutButton.on_click(pos):
                     game_status = 0
-                if ChangeLanguage.on_click(pos):
+                if ChangeLanguageButton.on_click(pos):
                     StartButton.change_language()
                     InputWidth.change_language()
                     InputHeight.change_language()
@@ -376,7 +411,7 @@ while flag_game:
         # Text
         # Buttons
         OutButton.draw(window)
-        ChangeLanguage.draw(window)
+        ChangeLanguageButton.draw(window)
         """Функции pygame"""
         tick()
         pygame.display.update()
