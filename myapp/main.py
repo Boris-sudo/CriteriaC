@@ -8,8 +8,12 @@ import struct
 """Параметры"""
 from lib.parameters import *
 from lib.labirint_generator import generate_labyrinth
-from lib.input import *
-from lib.imagebutton import *
+from lib.labirint_generator import get_path
+from lib.labirint_generator import max_way_in_labyrinth
+from lib.input import Input
+from lib.imagebutton import StartButton
+from lib.imagebutton import ImageButton
+from lib.functions import *
 
 """Функции"""
 ##########Рисование лабиринта
@@ -54,74 +58,6 @@ def new_game():
     draw_labyrinth(matrix, start, finish)
 
 
-def tick():
-    """Cекудномер"""
-    global start_time, t
-    t = time.time() - start_time
-
-
-def check(v, g):
-    n, m = len(g), len(g[0])
-    return 0 <= v[0] < n and 0 <= v[1] < m
-
-
-def get_path(start, finish, g):
-    used = [[False] * len(g[0]) for i in range(len(g))]
-    direction = [[0] * len(g[0]) for i in range(len(g))]
-    queue = [start]
-
-    while len(queue) != 0:
-        v = queue[0]
-        queue.remove(queue[0])
-        used[v[0]][v[1]] = True
-        for i in range(4):
-            to = [v[0] + dx[i], v[1] + dy[i]]
-            if check(to, g) and not used[to[0]][to[1]] and g[to[0]][to[1]]:
-                queue.append(to)
-                direction[to[0]][to[1]] = v
-
-    path = [finish]
-    v = finish
-    while v != start:
-        v = direction[v[0]][v[1]]
-        path.append(v)
-    path.reverse()
-    return path
-
-
-def find_max_way(x, y, g, used):
-    used[x][y] = True
-    result = 0
-    for i in range(4):
-        to_x, to_y = x + dx[i], y + dy[i]
-        if check([to_x, to_y], g) and g[to_x][to_y] and not used[to_x][to_y]:
-            result = max(result, find_max_way(to_x, to_y, g, used))
-    if (x + y) % 2 == 0:
-        return result + 1
-    return result
-
-
-def max_way_in_labyrinth(g):
-    max_way, n, m = 0, len(g), len(g[0])
-    for x in range(n):
-        for y in range(m):
-            if (x + y) % 2 == 0:
-                count = 0
-                for k in range(4):
-                    if check([x + dx[k], y + dy[k]], g) and g[x+dx[k]][y+dy[k]]:
-                        count += 1
-                if count == 1:
-                    used = [[False] * m for i in range(n)]
-                    max_way = max(max_way, find_max_way(x, y, g, used))
-    return max_way
-
-
-def get_cords(x, y):
-    cord_x = WIDTH_BORDER + x / 2 * (WIDTH_LINE + WIDTH_WALL) + 20
-    cord_y = WIDTH_BORDER + y / 2 * (WIDTH_LINE + WIDTH_WALL) + 20
-    return [cord_x, cord_y]
-
-
 def draw_path(surface, matrix, start, finish):
     way = get_path(start, finish, matrix)
     prev = way[0]
@@ -134,36 +70,6 @@ def draw_path(surface, matrix, start, finish):
             pygame.draw.line(surface, BLUE, s, f)
             way_length += 1
     return way_length
-
-
-def get_text(count):
-    if 1 <= count <= 2:
-        return "клетка"
-    if 3 <= count <= 4:
-        return "клетки"
-    if 5 <= count:
-        return "клеток"
-
-
-def is_valid(x, y, matrix):
-    n = len(matrix)
-    m = len(matrix[0])
-    return 0 <= 2 * x <= n and 0 <= 2 * y <= m
-
-
-def to_16(s):
-    if type(s) == str:
-        s = int(s, 2)
-    s16 = hex(s)[2:]
-    if len(s16) % 2 == 1:
-        s16 = '0' + s16
-    res = ""
-    for i in range(len(s16)):
-        if i != 0 and i % 2 == 0:
-            res += ' '
-        res += s16[i]
-    return res
-
 """Переменные"""
 info = True
 t = 0
@@ -187,7 +93,7 @@ AboutText = small_font.render(AboutTextArray[language], True, WHITE)
 AboutTextRect = StartText.get_rect()
 AboutTextRect.center = [WIDTH_WINDOW / 2 - 50, 450]
 # инпуты
-InputWidth = Input(100, 500, ["Длинна: ", "Width: "])
+InputWidth = Input(100, 500, ["Длина: ", "Width: "])
 InputHeight = Input(100, 600, ["Высота: ", "Height: "])
 # кнопки
 StartButton = StartButton(1000, 300, window)
@@ -211,7 +117,7 @@ position_finish = DEFAULT_CORDS
 start_time = time.time()
 max_length = 0
 length = -1
-image_count=0
+image_count = 0
 """Основной цикл игры"""
 while flag_game:
     window.fill(BLACK)
