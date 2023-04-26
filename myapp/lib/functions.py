@@ -1,5 +1,4 @@
 import time
-from myapp.lib.parameters import *
 
 
 def get_text(count):
@@ -29,9 +28,3 @@ def to_16(s):
             res += ' '
         res += s16[i]
     return res
-
-
-def get_cords(x, y):
-    cord_x = WIDTH_BORDER + x / 2 * (WIDTH_LINE + WIDTH_WALL) + 20
-    cord_y = WIDTH_BORDER + y / 2 * (WIDTH_LINE + WIDTH_WALL) + 20
-    return [cord_x, cord_y]

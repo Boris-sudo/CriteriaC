@@ -17,6 +17,12 @@ from lib.functions import *
 
 """Функции"""
 ##########Рисование лабиринта
+def get_cords(x, y):
+    cord_x = WIDTH_BORDER + x / 2 * (WIDTH_LINE + WIDTH_WALL) + 20
+    cord_y = WIDTH_BORDER + y / 2 * (WIDTH_LINE + WIDTH_WALL) + 20
+    return [cord_x, cord_y]
+
+
 def draw_labyrinth(matrix, start, finish):
     width = (len(matrix) // 2 + 1) * WIDTH_LINE + (len(matrix) // 2) * WIDTH_WALL + WIDTH_BORDER * 2
     height = (len(matrix[0]) // 2 + 1) * WIDTH_LINE + (len(matrix[0]) // 2) * WIDTH_WALL + WIDTH_BORDER * 2

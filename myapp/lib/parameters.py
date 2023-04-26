@@ -16,10 +16,10 @@ WIDTH_BORDER = 5
 WIDTH_LINE = 40
 WIDTH_WALL = 5
 """Пути к спрайтам"""
-changeLanguageIcon = "myapp\static\change-language-icon.png"
-safeIcon = "myapp\static\safe-icon.png"
-crossIcon = "myapp\static\cross.png"
-settingsIcon = "myapp\static\settings-image.png"
+changeLanguageIcon = "static\change-language-icon.png"
+safeIcon = "static\safe-icon.png"
+crossIcon = "static\cross.png"
+settingsIcon = "static\settings-image.png"
 """Определенные цвета"""
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
