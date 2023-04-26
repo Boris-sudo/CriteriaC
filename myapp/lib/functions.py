@@ -1,5 +1,5 @@
 import time
-from parameters import *
+from myapp.lib.parameters import *
 
 
 def get_text(count):
@@ -29,12 +29,6 @@ def to_16(s):
             res += ' '
         res += s16[i]
     return res
-
-
-def tick():
-    """Cекудномер"""
-    global start_time, t
-    t = time.time() - start_time
 
 
 def get_cords(x, y):

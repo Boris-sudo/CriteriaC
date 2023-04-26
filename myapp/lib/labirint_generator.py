@@ -1,6 +1,6 @@
 import random
-from parameters import dx, dy
 
+dx, dy = [1, 0, -1, 0], [0, -1, 0, 1]
 
 def start_point_generate(n, m):
     """Функция выбора точки начала лабиринта"""

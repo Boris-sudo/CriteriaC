@@ -58,6 +58,12 @@ def new_game():
     draw_labyrinth(matrix, start, finish)
 
 
+def tick():
+    """Cекудномер"""
+    global start_time, t
+    t = time.time() - start_time
+
+
 def draw_path(surface, matrix, start, finish):
     way = get_path(start, finish, matrix)
     prev = way[0]
@@ -87,8 +93,8 @@ StartTextArray = ["Всем привет, это просто строитель
 StartText = font.render(StartTextArray[language], True, WHITE)
 StartTextRect = StartText.get_rect()
 StartTextRect.center = [WIDTH_WINDOW / 2, 50]
-AboutTextArray = ["сначала введите значение для width, потом нажмите Enter и введите значение для Height",
-                  "first enter a value for width, then press Enter and enter a value for Height"]
+AboutTextArray = ["Нажав на текст, в область которого вы хотите ввести значение вы сможете его туда вводить, значение не может быть больше 16",
+                  "By clicking on the text where you enter the value, you can enter it"]
 AboutText = small_font.render(AboutTextArray[language], True, WHITE)
 AboutTextRect = StartText.get_rect()
 AboutTextRect.center = [WIDTH_WINDOW / 2 - 50, 450]
